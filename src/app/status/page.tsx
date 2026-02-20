@@ -1,6 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
-import { MODULES_STATUS, STATUS_COLORS, type ModuleStatus } from "@/lib/constants";
+import {
+  MODULES_STATUS,
+  STATUS_COLORS,
+  PRODUCT_LABELS,
+  PRODUCT_BAR_COLORS,
+  type ModuleStatus,
+  type ProductLine,
+} from "@/lib/constants";
 
 function StatusBadge({ status }: { status: ModuleStatus }) {
   return (
@@ -19,6 +26,19 @@ export default function StatusPage() {
     MODULES_STATUS.reduce((sum, m) => sum + m.pct, 0) / MODULES_STATUS.length
   );
 
+  const productOrder: ProductLine[] = ["books", "aero", "vault"];
+  const productHeaderColors: Record<ProductLine, string> = {
+    books: "text-brand-yellow",
+    aero: "text-brand-cyan",
+    vault: "text-purple-400",
+  };
+
+  const grouped = productOrder.map((product) => ({
+    product,
+    label: PRODUCT_LABELS[product],
+    modules: MODULES_STATUS.filter((m) => m.product === product),
+  }));
+
   return (
     <main className="min-h-screen">
       {/* Header */}
@@ -26,7 +46,7 @@ export default function StatusPage() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <Image src="/logoA.svg" alt="Adaptensor" width={32} height={32} />
-            <span className="font-bold text-white">AdaptAero</span>
+            <span className="font-bold text-white"><em className="not-italic text-brand-yellow italic">Adapt</em>ensor</span>
             <span className="text-xs text-zinc-500 border border-brand-border rounded px-2 py-0.5">
               Status
             </span>
@@ -44,10 +64,10 @@ export default function StatusPage() {
         {/* Title */}
         <div className="mb-12">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
-            Platform Status
+            Adaptensor Platform Status
           </h1>
           <p className="text-zinc-400">
-            Real-time module status for AdaptAero Aviation MRO Platform.
+            Real-time module status across all Adaptensor products.
             Current version: <span className="text-brand-cyan font-mono">v0.9.2-beta</span>
           </p>
         </div>
@@ -82,33 +102,39 @@ export default function StatusPage() {
           </span>
         </div>
 
-        {/* Module Grid */}
-        <div className="space-y-3">
-          {MODULES_STATUS.map((mod) => (
-            <div
-              key={mod.name}
-              className="rounded-lg bg-brand-card border border-brand-border p-5 flex items-center gap-6 hover:border-brand-borderHover transition-colors"
-            >
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-sm font-semibold text-zinc-200">{mod.name}</h3>
-                  <StatusBadge status={mod.status} />
-                </div>
-                <div className="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
+        {/* Module Grid — grouped by product */}
+        <div className="space-y-10">
+          {grouped.map(({ product, label, modules }) => (
+            <div key={product}>
+              <h2 className={`text-lg font-bold mb-4 ${productHeaderColors[product]}`}>
+                {label}
+              </h2>
+              <div className="space-y-3">
+                {modules.map((mod) => (
                   <div
-                    className="h-full rounded-full transition-all duration-1000"
-                    style={{
-                      width: `${mod.pct}%`,
-                      backgroundColor:
-                        mod.status === "live" ? "#10b981" :
-                        mod.status === "beta" ? "#06B6D4" :
-                        mod.status === "dev" ? "#f97316" : "#71717a",
-                    }}
-                  />
-                </div>
-              </div>
-              <div className="text-right shrink-0">
-                <span className="text-lg font-bold font-mono text-white">{mod.pct}%</span>
+                    key={mod.name}
+                    className="rounded-lg bg-brand-card border border-brand-border p-5 flex items-center gap-6 hover:border-brand-borderHover transition-colors"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-sm font-semibold text-zinc-200">{mod.name}</h3>
+                        <StatusBadge status={mod.status} />
+                      </div>
+                      <div className="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-1000"
+                          style={{
+                            width: `${mod.pct}%`,
+                            backgroundColor: PRODUCT_BAR_COLORS[product],
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="text-lg font-bold font-mono text-white">{mod.pct}%</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           ))}
@@ -119,10 +145,10 @@ export default function StatusPage() {
           <h2 className="text-xl font-bold text-white mb-6">Platform Specifications</h2>
           <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { label: "Database Models", value: "145+" },
+              { label: "Data Models", value: "145+" },
               { label: "API Endpoints", value: "309" },
-              { label: "Frontend Pages", value: "57" },
-              { label: "Build Framework", value: "Next.js 14" },
+              { label: "Pages", value: "57" },
+              { label: "Products", value: "3" },
               { label: "Database", value: "PostgreSQL" },
               { label: "Auth Provider", value: "Clerk SSO" },
               { label: "Hosting", value: "Vercel" },
@@ -141,9 +167,9 @@ export default function StatusPage() {
           <h2 className="text-xl font-bold text-white mb-6">Version History</h2>
           <div className="space-y-4">
             {[
-              { version: "v0.9.2", date: "Feb 2026", note: "Beta portal launch, 8 core aviation phases complete" },
+              { version: "v0.9.2", date: "Feb 2026", note: "Beta portal launch, multi-product rebrand, 8 core aviation phases complete" },
               { version: "v0.9.1", date: "Feb 2026", note: "Financial authorization & draw system (AV-9)" },
-              { version: "v0.9.0", date: "Jan 2026", note: "Initial aviation MRO beta with 6 core modules" },
+              { version: "v0.9.0", date: "Jan 2026", note: "Initial platform beta with core modules across all products" },
             ].map((v) => (
               <div key={v.version} className="flex items-start gap-4">
                 <span className="text-brand-cyan font-mono text-sm font-bold shrink-0 w-16">{v.version}</span>

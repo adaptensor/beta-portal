@@ -5,6 +5,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { TESTER_ROLES, CURRENT_SOFTWARE_OPTIONS } from "@/lib/constants";
 
+const PRODUCT_OPTIONS = [
+  { value: "AdaptBooks (POS + Accounting)", label: "AdaptBooks (POS + Accounting)" },
+  { value: "AdaptAero (Aviation MRO)", label: "AdaptAero (Aviation MRO)" },
+  { value: "AdaptVault (Document Vault)", label: "AdaptVault (Document Vault)" },
+  { value: "All of the above", label: "All of the above" },
+] as const;
+
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: "",
@@ -13,10 +20,20 @@ export default function RegisterPage() {
     role: "",
     aircraftTypes: "",
     currentSoftware: "",
+    interestedProducts: [] as string[],
     agreedToTerms: false,
   });
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+
+  const handleProductToggle = (value: string) => {
+    setFormData((prev) => {
+      const products = prev.interestedProducts.includes(value)
+        ? prev.interestedProducts.filter((p) => p !== value)
+        : [...prev.interestedProducts, value];
+      return { ...prev, interestedProducts: products };
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +44,10 @@ export default function RegisterPage() {
       const res = await fetch("/api/beta/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          interestedProducts: formData.interestedProducts.join(", "),
+        }),
       });
 
       const data = await res.json();
@@ -76,9 +96,9 @@ export default function RegisterPage() {
           <Link href="/" className="inline-block mb-6">
             <Image src="/logoA.svg" alt="Adaptensor" width={40} height={40} />
           </Link>
-          <h1 className="text-3xl font-bold text-white mb-2">Join the AdaptAero Beta</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">Join the Adaptensor Beta Program</h1>
           <p className="text-zinc-400">
-            Tell us about yourself and how you work with aircraft.
+            Get early access to AdaptBooks, AdaptAero, and AdaptVault.
           </p>
         </div>
 
@@ -175,6 +195,29 @@ export default function RegisterPage() {
                 <option key={sw} value={sw}>{sw}</option>
               ))}
             </select>
+          </div>
+
+          {/* Interested Products */}
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-2">
+              Which products are you most interested in testing?
+            </label>
+            <div className="space-y-2">
+              {PRODUCT_OPTIONS.map((opt) => (
+                <label
+                  key={opt.value}
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-brand-dark border border-brand-border hover:border-brand-borderHover cursor-pointer transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    checked={formData.interestedProducts.includes(opt.value)}
+                    onChange={() => handleProductToggle(opt.value)}
+                    className="w-4 h-4 rounded border-brand-border bg-brand-dark text-brand-cyan focus:ring-brand-cyan/50"
+                  />
+                  <span className="text-sm text-zinc-300">{opt.label}</span>
+                </label>
+              ))}
+            </div>
           </div>
 
           {/* Terms */}

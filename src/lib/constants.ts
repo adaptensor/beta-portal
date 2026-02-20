@@ -70,25 +70,65 @@ export const CURRENT_SOFTWARE_OPTIONS = [
 
 export type ModuleStatus = "live" | "beta" | "dev" | "planned";
 
+export type ProductLine = "books" | "aero" | "vault";
+
 export interface ModuleInfo {
   name: string;
   status: ModuleStatus;
   pct: number;
+  product: ProductLine;
 }
 
+export const PRODUCT_COLORS: Record<ProductLine, string> = {
+  books: "text-brand-yellow border-brand-yellow/30",
+  aero: "text-brand-cyan border-brand-cyan/30",
+  vault: "text-purple-400 border-purple-400/30",
+};
+
+export const PRODUCT_BG_COLORS: Record<ProductLine, string> = {
+  books: "bg-brand-yellow/10",
+  aero: "bg-brand-cyan/10",
+  vault: "bg-purple-500/10",
+};
+
+export const PRODUCT_BAR_COLORS: Record<ProductLine, string> = {
+  books: "#FBBF24",
+  aero: "#06B6D4",
+  vault: "#A855F7",
+};
+
+export const PRODUCT_LABELS: Record<ProductLine, string> = {
+  books: "AdaptBooks",
+  aero: "AdaptAero",
+  vault: "AdaptVault",
+};
+
 export const MODULES_STATUS: ModuleInfo[] = [
-  { name: "Aircraft Registry", status: "live", pct: 100 },
-  { name: "Work Order Engine", status: "live", pct: 100 },
-  { name: "Compliance Engine (AD/SB)", status: "live", pct: 100 },
-  { name: "Parts Traceability & 8130-3", status: "live", pct: 100 },
-  { name: "FAA Form Generation (337)", status: "live", pct: 100 },
-  { name: "Personnel & Calibration", status: "live", pct: 100 },
-  { name: "Reporting & Analytics", status: "beta", pct: 90 },
-  { name: "AdaptGent Aviation AI", status: "beta", pct: 85 },
-  { name: "Customer Portal (Owner)", status: "beta", pct: 80 },
-  { name: "Data Migration Wizard", status: "dev", pct: 60 },
-  { name: "Offline / PWA Mode", status: "dev", pct: 45 },
-  { name: "Laser Operations Module", status: "planned", pct: 0 },
+  // AdaptBooks
+  { name: "POS / Register", status: "live", pct: 100, product: "books" },
+  { name: "Inventory Management", status: "live", pct: 100, product: "books" },
+  { name: "Accounting / General Ledger", status: "live", pct: 100, product: "books" },
+  { name: "Accounts Payable / Receivable", status: "live", pct: 100, product: "books" },
+  { name: "Financial Reports", status: "live", pct: 100, product: "books" },
+  { name: "Customer Management", status: "live", pct: 100, product: "books" },
+  { name: "Onboarding Wizard", status: "beta", pct: 70, product: "books" },
+  // AdaptAero
+  { name: "Aircraft Registry", status: "live", pct: 100, product: "aero" },
+  { name: "Work Order Engine", status: "live", pct: 100, product: "aero" },
+  { name: "Compliance Engine (AD/SB)", status: "live", pct: 100, product: "aero" },
+  { name: "Parts Traceability & 8130-3", status: "live", pct: 100, product: "aero" },
+  { name: "FAA Form Generation (337)", status: "live", pct: 100, product: "aero" },
+  { name: "Personnel & Calibration", status: "live", pct: 100, product: "aero" },
+  { name: "Reporting & Analytics", status: "beta", pct: 90, product: "aero" },
+  { name: "AdaptGent Aviation AI", status: "beta", pct: 85, product: "aero" },
+  { name: "Customer Portal (Owner)", status: "beta", pct: 80, product: "aero" },
+  { name: "Data Migration Wizard", status: "dev", pct: 60, product: "aero" },
+  { name: "Offline / PWA Mode", status: "dev", pct: 45, product: "aero" },
+  { name: "Laser Operations Module", status: "planned", pct: 0, product: "aero" },
+  // AdaptVault
+  { name: "Document Vault", status: "beta", pct: 75, product: "vault" },
+  { name: "AI Analysis", status: "dev", pct: 50, product: "vault" },
+  { name: "Auto-Trigger Release", status: "dev", pct: 40, product: "vault" },
 ];
 
 export const STATUS_COLORS: Record<ModuleStatus, string> = {

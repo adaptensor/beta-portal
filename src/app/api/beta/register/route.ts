@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, role, company, aircraftTypes, currentSoftware, agreedToTerms } = body;
+    const { name, email, role, company, aircraftTypes, currentSoftware, interestedProducts, agreedToTerms } = body;
 
     // Validate required fields
     if (!name || !email || !role) {
@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
         company: company || null,
         aircraftTypes: aircraftTypes || null,
         currentSoftware: currentSoftware || null,
+        interestedProducts: interestedProducts || null,
         agreedToTerms: true,
         clerkUserId,
         status: "pending",

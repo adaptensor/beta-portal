@@ -18,13 +18,13 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AdaptAero Beta Program | Adaptensor",
+  title: "Adaptensor Beta Program — AdaptBooks, AdaptAero, AdaptVault",
   description:
-    "Shape the future of aviation MRO software. Join the AdaptAero beta testing program — the only affordable, FAA-compliant MRO + accounting platform built for repair stations.",
+    "One platform for operations, accounting, compliance, and documents. Join the Adaptensor beta testing program — AdaptBooks for POS and accounting, AdaptAero for FAA-compliant aviation MRO, and AdaptVault for secure document management.",
   openGraph: {
-    title: "AdaptAero Beta Program",
+    title: "Adaptensor Beta Program",
     description:
-      "Join the beta testing program for AdaptAero — aviation MRO cloud platform by Adaptensor.",
+      "Join the beta testing program for Adaptensor — AdaptBooks, AdaptAero, and AdaptVault. One platform, three products, zero compromise.",
     type: "website",
     url: "https://beta.adaptensor.io",
   },

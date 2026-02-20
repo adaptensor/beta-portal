@@ -19,8 +19,9 @@ model BetaTester {
   company         String?
   role            String
   aircraftTypes   String?   @map("aircraft_types")
-  currentSoftware String?   @map("current_software")
-  status          String    @default("pending")
+  currentSoftware    String?   @map("current_software")
+  interestedProducts String?   @map("interested_products")
+  status             String    @default("pending")
   agreedToTerms   Boolean   @default(false) @map("agreed_to_terms")
   inviteCode      String?   @unique @map("invite_code")
   registeredAt    DateTime  @default(now()) @map("registered_at")
