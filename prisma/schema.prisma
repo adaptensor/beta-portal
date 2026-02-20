@@ -1,0 +1,210 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════
+// BETA TESTERS
+// ═══════════════════════════════════════
+
+model BetaTester {
+  id              String    @id @default(cuid())
+  clerkUserId     String?   @unique @map("clerk_user_id")
+  name            String
+  email           String    @unique
+  company         String?
+  role            String
+  aircraftTypes   String?   @map("aircraft_types")
+  currentSoftware String?   @map("current_software")
+  status          String    @default("pending")
+  agreedToTerms   Boolean   @default(false) @map("agreed_to_terms")
+  inviteCode      String?   @unique @map("invite_code")
+  registeredAt    DateTime  @default(now()) @map("registered_at")
+  approvedAt      DateTime? @map("approved_at")
+  lastActiveAt    DateTime? @map("last_active_at")
+  notes           String?
+
+  bugs     BetaBugReport[]
+  features BetaFeatureRequest[]
+  comments BetaComment[]
+  votes    BetaVote[]
+
+  @@map("beta_testers")
+}
+
+// ═══════════════════════════════════════
+// BUG REPORTS
+// ═══════════════════════════════════════
+
+model BetaBugReport {
+  id               String    @id @default(cuid())
+  reportNumber     String    @unique @map("report_number")
+  testerId         String    @map("tester_id")
+  title            String
+  category         String
+  severity         String
+  status           String    @default("submitted")
+  stepsToReproduce String?   @map("steps_to_reproduce")
+  expectedBehavior String?   @map("expected_behavior")
+  actualBehavior   String?   @map("actual_behavior")
+  browserOs        String?   @map("browser_os")
+  pageUrl          String?   @map("page_url")
+  consoleErrors    String?   @map("console_errors")
+  assignedTo       String?   @map("assigned_to")
+  fixedInVersion   String?   @map("fixed_in_version")
+  resolution       String?
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  resolvedAt       DateTime? @map("resolved_at")
+
+  tester      BetaTester       @relation(fields: [testerId], references: [id])
+  attachments BetaAttachment[]
+  comments    BetaComment[]
+  votes       BetaVote[]
+
+  @@map("beta_bug_reports")
+}
+
+// ═══════════════════════════════════════
+// FEATURE REQUESTS
+// ═══════════════════════════════════════
+
+model BetaFeatureRequest {
+  id             String   @id @default(cuid())
+  requestNumber  String   @unique @map("request_number")
+  testerId       String   @map("tester_id")
+  title          String
+  category       String
+  priority       String   @default("medium")
+  status         String   @default("submitted")
+  description    String
+  useCase        String?  @map("use_case")
+  targetVersion  String?  @map("target_version")
+  adminResponse  String?  @map("admin_response")
+  voteCount      Int      @default(0) @map("vote_count")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  tester      BetaTester       @relation(fields: [testerId], references: [id])
+  attachments BetaAttachment[]
+  comments    BetaComment[]
+  votes       BetaVote[]
+
+  @@map("beta_feature_requests")
+}
+
+// ═══════════════════════════════════════
+// ATTACHMENTS
+// ═══════════════════════════════════════
+
+model BetaAttachment {
+  id               String   @id @default(cuid())
+  bugReportId      String?  @map("bug_report_id")
+  featureRequestId String?  @map("feature_request_id")
+  fileName         String   @map("file_name")
+  fileUrl          String   @map("file_url")
+  fileSize         Int      @map("file_size")
+  mimeType         String   @map("mime_type")
+  uploadedAt       DateTime @default(now()) @map("uploaded_at")
+
+  bugReport      BetaBugReport?      @relation(fields: [bugReportId], references: [id])
+  featureRequest BetaFeatureRequest? @relation(fields: [featureRequestId], references: [id])
+
+  @@map("beta_attachments")
+}
+
+// ═══════════════════════════════════════
+// COMMENTS
+// ═══════════════════════════════════════
+
+model BetaComment {
+  id               String   @id @default(cuid())
+  bugReportId      String?  @map("bug_report_id")
+  featureRequestId String?  @map("feature_request_id")
+  testerId         String?  @map("tester_id")
+  authorName       String   @map("author_name")
+  isAdmin          Boolean  @default(false) @map("is_admin")
+  content          String
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  bugReport      BetaBugReport?      @relation(fields: [bugReportId], references: [id])
+  featureRequest BetaFeatureRequest? @relation(fields: [featureRequestId], references: [id])
+  tester         BetaTester?         @relation(fields: [testerId], references: [id])
+
+  @@map("beta_comments")
+}
+
+// ═══════════════════════════════════════
+// VOTES
+// ═══════════════════════════════════════
+
+model BetaVote {
+  id               String   @id @default(cuid())
+  bugReportId      String?  @map("bug_report_id")
+  featureRequestId String?  @map("feature_request_id")
+  testerId         String   @map("tester_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  bugReport      BetaBugReport?      @relation(fields: [bugReportId], references: [id])
+  featureRequest BetaFeatureRequest? @relation(fields: [featureRequestId], references: [id])
+  tester         BetaTester          @relation(fields: [testerId], references: [id])
+
+  @@unique([testerId, bugReportId])
+  @@unique([testerId, featureRequestId])
+
+  @@map("beta_votes")
+}
+
+// ═══════════════════════════════════════
+// SESSION PROMPTS
+// ═══════════════════════════════════════
+
+model BetaSessionPrompt {
+  id            String   @id @default(cuid())
+  title         String
+  phase         String
+  description   String
+  promptContent String   @map("prompt_content")
+  version       String   @default("1.0")
+  isPublic      Boolean  @default(true) @map("is_public")
+  sortOrder     Int      @default(0) @map("sort_order")
+  estimatedTime String?  @map("estimated_time")
+  prerequisites String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("beta_session_prompts")
+}
+
+// ═══════════════════════════════════════
+// ANNOUNCEMENTS
+// ═══════════════════════════════════════
+
+model BetaAnnouncement {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  type        String   @default("update")
+  version     String?
+  isPinned    Boolean  @default(false) @map("is_pinned")
+  publishedAt DateTime @default(now()) @map("published_at")
+
+  @@map("beta_announcements")
+}
+
+// ═══════════════════════════════════════
+// PLATFORM METRICS
+// ═══════════════════════════════════════
+
+model BetaPlatformMetric {
+  id          String   @id @default(cuid())
+  metricName  String   @map("metric_name")
+  metricValue String   @map("metric_value")
+  recordedAt  DateTime @default(now()) @map("recorded_at")
+
+  @@map("beta_platform_metrics")
+}
