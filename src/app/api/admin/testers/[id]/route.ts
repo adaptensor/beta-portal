@@ -34,17 +34,20 @@ export async function PATCH(
       data,
     });
 
-    // Optional: Send approval email via SendGrid
+    // Send approval email via SendGrid
+    let emailSent = false;
+    let emailError: string | null = null;
     if (status === "approved" && process.env.SENDGRID_API_KEY) {
       try {
         await sendApprovalEmail(updated.email, updated.name);
-      } catch (emailError) {
+        emailSent = true;
+      } catch (err) {
+        emailError = err instanceof Error ? err.message : "Unknown email error";
         console.error("Failed to send approval email:", emailError);
-        // Non-blocking — tester is still approved
       }
     }
 
-    return NextResponse.json(updated);
+    return NextResponse.json({ ...updated, emailSent, emailError });
   } catch (error) {
     console.error("Update tester error:", error);
     const message = error instanceof Error ? error.message : "Failed to update tester";
@@ -132,6 +135,7 @@ async function sendApprovalEmail(email: string, name: string) {
   });
 
   if (!response.ok) {
-    throw new Error(`SendGrid API returned ${response.status}`);
+    const errorBody = await response.text();
+    throw new Error(`SendGrid API returned ${response.status}: ${errorBody}`);
   }
 }

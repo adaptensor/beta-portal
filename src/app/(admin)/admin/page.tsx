@@ -60,10 +60,12 @@ export default function AdminDashboard() {
   const [criticalBugs, setCriticalBugs] = useState<Issue[]>([]);
   const [topFeatures, setTopFeatures] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
+      setFetchError(null);
       const [analyticsRes, testersRes, bugsRes, featuresRes] = await Promise.all([
         fetch("/api/admin/analytics"),
         fetch("/api/admin/testers?status=pending"),
@@ -71,28 +73,46 @@ export default function AdminDashboard() {
         fetch("/api/beta/features?limit=5"),
       ]);
 
-      const analyticsData = await analyticsRes.json();
-      const testersData = await testersRes.json();
-      const bugsData = await bugsRes.json();
-      const featuresData = await featuresRes.json();
+      const failed: string[] = [];
+      if (!analyticsRes.ok) failed.push(`analytics (${analyticsRes.status})`);
+      if (!testersRes.ok) failed.push(`testers (${testersRes.status})`);
+      if (!bugsRes.ok) failed.push(`bugs (${bugsRes.status})`);
+      if (!featuresRes.ok) failed.push(`features (${featuresRes.status})`);
 
-      setAnalytics(analyticsData);
-      setPendingTesters((testersData.testers || []).slice(0, 10));
+      if (failed.length > 0) {
+        console.error("API errors:", failed.join(", "));
+        setFetchError(`Failed to load: ${failed.join(", ")}`);
+      }
 
-      // Get critical + high severity bugs that are submitted
-      const highBugs = (bugsData.bugs || []).filter(
-        (b: Issue & { severity: string; status: string }) =>
-          (b.severity === "critical" || b.severity === "high") && b.status === "submitted"
-      );
-      setCriticalBugs(highBugs.slice(0, 5));
+      if (analyticsRes.ok) {
+        const analyticsData = await analyticsRes.json();
+        setAnalytics(analyticsData);
+      }
 
-      // Get top voted features that are still submitted
-      const topF = (featuresData.features || [])
-        .filter((f: Issue & { status: string }) => f.status === "submitted")
-        .sort((a: Issue, b: Issue) => (b.voteCount || 0) - (a.voteCount || 0));
-      setTopFeatures(topF.slice(0, 5));
+      if (testersRes.ok) {
+        const testersData = await testersRes.json();
+        setPendingTesters((testersData.testers || []).slice(0, 10));
+      }
+
+      if (bugsRes.ok) {
+        const bugsData = await bugsRes.json();
+        const highBugs = (bugsData.bugs || []).filter(
+          (b: Issue & { severity: string; status: string }) =>
+            (b.severity === "critical" || b.severity === "high") && b.status === "submitted"
+        );
+        setCriticalBugs(highBugs.slice(0, 5));
+      }
+
+      if (featuresRes.ok) {
+        const featuresData = await featuresRes.json();
+        const topF = (featuresData.features || [])
+          .filter((f: Issue & { status: string }) => f.status === "submitted")
+          .sort((a: Issue, b: Issue) => (b.voteCount || 0) - (a.voteCount || 0));
+        setTopFeatures(topF.slice(0, 5));
+      }
     } catch (error) {
       console.error("Failed to load admin data:", error);
+      setFetchError("Failed to connect to the server");
     } finally {
       setLoading(false);
     }
@@ -160,6 +180,12 @@ export default function AdminDashboard() {
           {actionLoading === "seed" ? "Seeding..." : "Seed Sample Data"}
         </button>
       </div>
+
+      {fetchError && (
+        <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">
+          {fetchError}. Check the browser console for details.
+        </div>
+      )}
 
       {/* Stats Cards */}
       {analytics && (
