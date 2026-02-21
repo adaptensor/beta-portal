@@ -28,12 +28,12 @@ function StatusBadge({ status }: { status: ModuleStatus }) {
 /* ─── HEADER / NAV ──────────────────────────────── */
 function Header() {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-brand-black/80 backdrop-blur-md border-b border-brand-border/50">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-brand-dark/80 backdrop-blur-md border-b border-brand-border/50">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Image src="/logoA.svg" alt="Adaptensor" width={32} height={32} />
           <span className="font-bold text-white"><em className="not-italic text-brand-yellow italic">Adapt</em>ensor</span>
-          <Badge className="bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30 ml-1">BETA</Badge>
+          <Badge className="bg-brand-yellow/10 text-brand-yellow border-brand-yellow/30 ml-1">BETA</Badge>
         </div>
 
         <nav className="hidden md:flex items-center gap-6 text-sm text-zinc-400">
@@ -42,7 +42,7 @@ function Header() {
           <Link href="/status" className="hover:text-white transition-colors">Status</Link>
           <Link
             href="/register"
-            className="px-4 py-2 bg-brand-yellow text-brand-black font-semibold rounded-lg hover:bg-brand-yellow/90 transition-all text-sm"
+            className="px-4 py-2 bg-brand-yellow text-brand-black font-semibold rounded-lg hover:bg-brand-gold-dark transition-all text-sm"
           >
             Join Beta
           </Link>
@@ -68,33 +68,33 @@ function Hero() {
       <div className="scanlines absolute inset-0 z-10" />
 
       {/* Gradient glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-brand-cyan/5 rounded-full blur-[120px]" />
-      <div className="absolute top-1/3 left-1/3 w-[400px] h-[400px] bg-brand-yellow/5 rounded-full blur-[100px]" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-brand-yellow/5 rounded-full blur-[120px]" />
+      <div className="absolute top-1/3 left-1/3 w-[400px] h-[400px] bg-brand-gold-dark/5 rounded-full blur-[100px]" />
 
       <div className="relative z-20 max-w-5xl mx-auto px-6 text-center">
         {/* Beta badge */}
-        <div className="inline-flex items-center gap-2 mb-8 px-4 py-1.5 rounded-full border border-brand-cyan/30 bg-brand-cyan/10">
-          <div className="w-2 h-2 rounded-full bg-brand-cyan animate-pulse" />
-          <span className="text-brand-cyan text-sm font-medium tracking-wide">BETA v0.9.2</span>
+        <div className="inline-flex items-center gap-2 mb-8 px-4 py-1.5 rounded-full border border-brand-yellow/30 bg-brand-yellow/10">
+          <div className="w-2 h-2 rounded-full bg-brand-yellow animate-pulse" />
+          <span className="text-brand-yellow text-sm font-medium tracking-wide">BETA v0.9.2</span>
         </div>
 
         <h1 className="text-5xl md:text-7xl font-extrabold leading-tight tracking-tight mb-6">
           One Platform.{" "}
           <span className="text-brand-yellow">Every Module.</span>{" "}
-          <span className="text-brand-cyan">Zero Compromise.</span>
+          <span className="text-brand-yellow">Zero Compromise.</span>
         </h1>
 
         <p className="text-lg md:text-xl text-zinc-400 max-w-3xl mx-auto mb-4">
-          <span className="text-brand-yellow font-semibold">AdaptBooks</span> for accounting and POS.{" "}
-          <span className="text-brand-cyan font-semibold">AdaptAero</span> for FAA-compliant aviation MRO.{" "}
-          <span className="text-purple-400 font-semibold">AdaptVault</span> for secure document management.{" "}
+          <span className="text-white font-bold">AdaptBooks</span> for accounting and POS.{" "}
+          <span className="text-white font-bold">AdaptAero</span> for FAA-compliant aviation MRO.{" "}
+          <span className="text-white font-bold">AdaptVault</span> for secure document management.{" "}
           All integrated. All affordable. Help us test it.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
           <Link
             href="/register"
-            className="px-8 py-3.5 bg-brand-yellow text-brand-black font-bold rounded-lg hover:bg-brand-yellow/90 transition-all text-lg shadow-lg shadow-brand-yellow/20"
+            className="px-8 py-3.5 bg-brand-yellow text-brand-black font-bold rounded-lg hover:bg-brand-gold-dark transition-all text-lg shadow-lg shadow-brand-yellow/20"
           >
             Join the Beta
           </Link>
@@ -109,15 +109,15 @@ function Hero() {
         {/* Reassurances */}
         <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-sm text-zinc-500">
           <span className="flex items-center gap-1.5">
-            <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+            <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
             No credit card
           </span>
           <span className="flex items-center gap-1.5">
-            <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+            <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
             Full platform access
           </span>
           <span className="flex items-center gap-1.5">
-            <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+            <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
             Pre-loaded demo data
           </span>
         </div>
@@ -211,9 +211,9 @@ function ThreeProducts() {
       tagline: "Aviation MRO",
       desc: "Aircraft registry, work orders, AD/SB compliance, parts traceability, 8130-3 tags, FAA form generation, inspection scheduling. Built for A&P mechanics and Part 145 shops.",
       url: "aviation.adaptensor.io",
-      color: "border-brand-cyan/30 hover:border-brand-cyan/60",
-      accent: "text-brand-cyan",
-      bgAccent: "bg-brand-cyan/10",
+      color: "border-[#F59E0B]/30 hover:border-[#F59E0B]/60",
+      accent: "text-[#F59E0B]",
+      bgAccent: "bg-[#F59E0B]/10",
       icon: (
         <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
@@ -225,9 +225,9 @@ function ThreeProducts() {
       tagline: "Secure Document Vault",
       desc: "Encrypted document storage, AI-powered analysis, full-text search, retention compliance, auto-trigger release. Your permanent records, protected.",
       url: "vault.adaptensor.io",
-      color: "border-purple-400/30 hover:border-purple-400/60",
-      accent: "text-purple-400",
-      bgAccent: "bg-purple-500/10",
+      color: "border-[#44EE30]/30 hover:border-[#44EE30]/60",
+      accent: "text-[#44EE30]",
+      bgAccent: "bg-[#44EE30]/10",
       icon: (
         <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
@@ -279,8 +279,8 @@ function ModulesGrid() {
 
   const productHeaderColors: Record<ProductLine, string> = {
     books: "text-brand-yellow",
-    aero: "text-brand-cyan",
-    vault: "text-purple-400",
+    aero: "text-[#F59E0B]",
+    vault: "text-[#44EE30]",
   };
 
   return (
@@ -371,7 +371,7 @@ function WhyJoin() {
       ),
       title: "Early Access",
       desc: "Get the full platform before GA launch. Explore every module, test every workflow.",
-      color: "text-brand-cyan",
+      color: "text-blue-500",
     },
     {
       icon: (
@@ -392,7 +392,7 @@ function WhyJoin() {
       ),
       title: "Founding Member Pricing",
       desc: "Beta testers get a locked-in rate at GA. The earlier you join, the more you save.",
-      color: "text-emerald-400",
+      color: "text-green-500",
     },
     {
       icon: (
@@ -402,7 +402,7 @@ function WhyJoin() {
       ),
       title: "Industry Recognition",
       desc: "Your name in the launch credits. Help build the platform your peers will use.",
-      color: "text-purple-400",
+      color: "text-brand-yellow",
     },
   ];
 
@@ -455,8 +455,8 @@ function HowItWorks() {
 
           {steps.map((s) => (
             <div key={s.num} className="text-center relative">
-              <div className="w-16 h-16 rounded-full bg-brand-card border-2 border-brand-cyan/30 flex items-center justify-center mx-auto mb-4 relative z-10">
-                <span className="text-brand-cyan font-bold text-xl font-mono">{s.num}</span>
+              <div className="w-16 h-16 rounded-full bg-brand-card border-2 border-brand-yellow/30 flex items-center justify-center mx-auto mb-4 relative z-10">
+                <span className="text-brand-yellow font-bold text-xl font-mono">{s.num}</span>
               </div>
               <h3 className="text-lg font-semibold text-white mb-2">{s.title}</h3>
               <p className="text-zinc-400 text-sm">{s.desc}</p>
@@ -481,7 +481,7 @@ function BottomCTA() {
         </p>
         <Link
           href="/register"
-          className="inline-block px-10 py-4 bg-brand-yellow text-brand-black font-bold rounded-lg hover:bg-brand-yellow/90 transition-all text-lg shadow-lg shadow-brand-yellow/20"
+          className="inline-block px-10 py-4 bg-brand-yellow text-brand-black font-bold rounded-lg hover:bg-brand-gold-dark transition-all text-lg shadow-lg shadow-brand-yellow/20"
         >
           Apply for Beta Access
         </Link>
