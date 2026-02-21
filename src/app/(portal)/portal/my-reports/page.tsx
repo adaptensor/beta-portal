@@ -13,39 +13,40 @@ export default async function MyReportsPage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
-  const tester = await prisma.betaTester.findUnique({
-    where: { clerkUserId: userId },
-  });
-  if (!tester) redirect("/register");
+  try {
+    const tester = await prisma.betaTester.findUnique({
+      where: { clerkUserId: userId },
+    });
+    if (!tester) redirect("/register");
 
-  const [bugs, features] = await Promise.all([
-    prisma.betaBugReport.findMany({
-      where: { testerId: tester.id },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.betaFeatureRequest.findMany({
-      where: { testerId: tester.id },
-      orderBy: { createdAt: "desc" },
-    }),
-  ]);
+    const [bugs, features] = await Promise.all([
+      prisma.betaBugReport.findMany({
+        where: { testerId: tester.id },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.betaFeatureRequest.findMany({
+        where: { testerId: tester.id },
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
 
-  const totalSubmitted = bugs.length + features.length;
-  const openBugs = bugs.filter((b) =>
-    ["submitted", "confirmed", "investigating", "in-progress"].includes(b.status)
-  ).length;
-  const openFeatures = features.filter((f) =>
-    ["submitted", "under-review", "planned", "in-progress"].includes(f.status)
-  ).length;
-  const resolved = bugs.filter((b) => b.status === "fixed").length +
-    features.filter((f) => f.status === "shipped").length;
+    const totalSubmitted = bugs.length + features.length;
+    const openBugs = bugs.filter((b) =>
+      ["submitted", "confirmed", "investigating", "in-progress"].includes(b.status)
+    ).length;
+    const openFeatures = features.filter((f) =>
+      ["submitted", "under-review", "planned", "in-progress"].includes(f.status)
+    ).length;
+    const resolved = bugs.filter((b) => b.status === "fixed").length +
+      features.filter((f) => f.status === "shipped").length;
 
-  const stats = [
-    { label: "Total Submitted", value: totalSubmitted, color: "text-brand-cyan" },
-    { label: "Open", value: openBugs + openFeatures, color: "text-brand-yellow" },
-    { label: "Resolved", value: resolved, color: "text-emerald-400" },
-  ];
+    const stats = [
+      { label: "Total Submitted", value: totalSubmitted, color: "text-brand-cyan" },
+      { label: "Open", value: openBugs + openFeatures, color: "text-brand-yellow" },
+      { label: "Resolved", value: resolved, color: "text-emerald-400" },
+    ];
 
-  return (
+    return (
     <div className="max-w-6xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold text-white">My Reports</h1>
 
@@ -174,5 +175,21 @@ export default async function MyReportsPage() {
         )}
       </div>
     </div>
-  );
+    );
+  } catch (error) {
+    console.error("[My Reports] Database error:", error);
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-8 max-w-md text-center">
+          <h2 className="text-xl font-semibold text-red-400 mb-2">Unable to load reports</h2>
+          <p className="text-gray-400 mb-4">
+            We&apos;re having trouble loading your reports. Please try again in a moment.
+          </p>
+          <a href="/portal/my-reports" className="inline-block px-4 py-2 bg-yellow-500 text-black rounded font-medium hover:bg-yellow-400 transition-colors">
+            Try Again
+          </a>
+        </div>
+      </div>
+    );
+  }
 }

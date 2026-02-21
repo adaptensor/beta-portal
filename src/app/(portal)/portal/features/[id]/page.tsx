@@ -18,42 +18,43 @@ export default async function FeatureDetailPage({
 
   const { id } = await params;
 
-  const feature = await prisma.betaFeatureRequest.findUnique({
-    where: { id },
-    include: {
-      tester: { select: { id: true, name: true, email: true, clerkUserId: true } },
-      attachments: true,
-      comments: {
-        include: { tester: { select: { name: true } } },
-        orderBy: { createdAt: "asc" },
+  try {
+    const feature = await prisma.betaFeatureRequest.findUnique({
+      where: { id },
+      include: {
+        tester: { select: { id: true, name: true, email: true, clerkUserId: true } },
+        attachments: true,
+        comments: {
+          include: { tester: { select: { name: true } } },
+          orderBy: { createdAt: "asc" },
+        },
+        votes: { select: { testerId: true } },
       },
-      votes: { select: { testerId: true } },
-    },
-  });
+    });
 
-  if (!feature) notFound();
+    if (!feature) notFound();
 
-  const isOwner = feature.tester.clerkUserId === userId;
-  const admin = isAdmin(userId);
+    const isOwner = feature.tester.clerkUserId === userId;
+    const admin = isAdmin(userId);
 
-  // Check if current user voted
-  const currentTester = await prisma.betaTester.findUnique({
-    where: { clerkUserId: userId },
-    select: { id: true },
-  });
-  const hasVoted = currentTester
-    ? feature.votes.some((v) => v.testerId === currentTester.id)
-    : false;
+    // Check if current user voted
+    const currentTester = await prisma.betaTester.findUnique({
+      where: { clerkUserId: userId },
+      select: { id: true },
+    });
+    const hasVoted = currentTester
+      ? feature.votes.some((v) => v.testerId === currentTester.id)
+      : false;
 
-  const commentsForThread = feature.comments.map((c) => ({
-    id: c.id,
-    authorName: c.authorName,
-    isAdmin: c.isAdmin,
-    content: c.content,
-    createdAt: c.createdAt.toISOString(),
-  }));
+    const commentsForThread = feature.comments.map((c) => ({
+      id: c.id,
+      authorName: c.authorName,
+      isAdmin: c.isAdmin,
+      content: c.content,
+      createdAt: c.createdAt.toISOString(),
+    }));
 
-  return (
+    return (
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
@@ -170,5 +171,9 @@ export default async function FeatureDetailPage({
         initialComments={commentsForThread}
       />
     </div>
-  );
+    );
+  } catch (error) {
+    console.error("[Feature Detail] Database error:", error);
+    notFound();
+  }
 }

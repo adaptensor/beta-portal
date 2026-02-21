@@ -13,112 +13,113 @@ export default async function DashboardPage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
-  const tester = await prisma.betaTester.findUnique({
-    where: { clerkUserId: userId },
-  });
-  if (!tester) redirect("/register");
+  try {
+    const tester = await prisma.betaTester.findUnique({
+      where: { clerkUserId: userId },
+    });
+    if (!tester) redirect("/register");
 
-  // Fetch stats
-  const [myBugs, myFeatures, openBugs, openFeatures, fixedThisWeek, myVotes] =
-    await Promise.all([
-      prisma.betaBugReport.count({ where: { testerId: tester.id } }),
-      prisma.betaFeatureRequest.count({ where: { testerId: tester.id } }),
-      prisma.betaBugReport.count({
-        where: {
-          status: {
-            in: ["submitted", "confirmed", "investigating", "in-progress"],
+    // Fetch stats
+    const [myBugs, myFeatures, openBugs, openFeatures, fixedThisWeek, myVotes] =
+      await Promise.all([
+        prisma.betaBugReport.count({ where: { testerId: tester.id } }),
+        prisma.betaFeatureRequest.count({ where: { testerId: tester.id } }),
+        prisma.betaBugReport.count({
+          where: {
+            status: {
+              in: ["submitted", "confirmed", "investigating", "in-progress"],
+            },
           },
-        },
-      }),
-      prisma.betaFeatureRequest.count({
-        where: {
-          status: { in: ["submitted", "under-review", "planned", "in-progress"] },
-        },
-      }),
-      prisma.betaBugReport.count({
-        where: {
-          status: "fixed",
-          resolvedAt: {
-            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+        }),
+        prisma.betaFeatureRequest.count({
+          where: {
+            status: { in: ["submitted", "under-review", "planned", "in-progress"] },
           },
-        },
+        }),
+        prisma.betaBugReport.count({
+          where: {
+            status: "fixed",
+            resolvedAt: {
+              gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+            },
+          },
+        }),
+        prisma.betaVote.count({ where: { testerId: tester.id } }),
+      ]);
+
+    // Recent activity (last 5 items combined)
+    const [recentBugs, recentFeatures] = await Promise.all([
+      prisma.betaBugReport.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        include: { tester: { select: { name: true } } },
       }),
-      prisma.betaVote.count({ where: { testerId: tester.id } }),
+      prisma.betaFeatureRequest.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        include: { tester: { select: { name: true } } },
+      }),
     ]);
 
-  // Recent activity (last 5 items combined)
-  const [recentBugs, recentFeatures] = await Promise.all([
-    prisma.betaBugReport.findMany({
-      take: 5,
-      orderBy: { createdAt: "desc" },
-      include: { tester: { select: { name: true } } },
-    }),
-    prisma.betaFeatureRequest.findMany({
-      take: 5,
-      orderBy: { createdAt: "desc" },
-      include: { tester: { select: { name: true } } },
-    }),
-  ]);
+    type ActivityItem = {
+      type: "bug" | "feature";
+      id: string;
+      number: string;
+      title: string;
+      status: string;
+      severity?: string;
+      priority?: string;
+      author: string;
+      createdAt: Date;
+    };
 
-  type ActivityItem = {
-    type: "bug" | "feature";
-    id: string;
-    number: string;
-    title: string;
-    status: string;
-    severity?: string;
-    priority?: string;
-    author: string;
-    createdAt: Date;
-  };
+    const recentActivity: ActivityItem[] = [
+      ...recentBugs.map((b) => ({
+        type: "bug" as const,
+        id: b.id,
+        number: b.reportNumber,
+        title: b.title,
+        status: b.status,
+        severity: b.severity,
+        author: b.tester.name,
+        createdAt: b.createdAt,
+      })),
+      ...recentFeatures.map((f) => ({
+        type: "feature" as const,
+        id: f.id,
+        number: f.requestNumber,
+        title: f.title,
+        status: f.status,
+        priority: f.priority,
+        author: f.tester.name,
+        createdAt: f.createdAt,
+      })),
+    ]
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, 5);
 
-  const recentActivity: ActivityItem[] = [
-    ...recentBugs.map((b) => ({
-      type: "bug" as const,
-      id: b.id,
-      number: b.reportNumber,
-      title: b.title,
-      status: b.status,
-      severity: b.severity,
-      author: b.tester.name,
-      createdAt: b.createdAt,
-    })),
-    ...recentFeatures.map((f) => ({
-      type: "feature" as const,
-      id: f.id,
-      number: f.requestNumber,
-      title: f.title,
-      status: f.status,
-      priority: f.priority,
-      author: f.tester.name,
-      createdAt: f.createdAt,
-    })),
-  ]
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    .slice(0, 5);
+    // Recent announcements
+    const announcements = await prisma.betaAnnouncement.findMany({
+      take: 2,
+      orderBy: [{ isPinned: "desc" }, { publishedAt: "desc" }],
+    });
 
-  // Recent announcements
-  const announcements = await prisma.betaAnnouncement.findMany({
-    take: 2,
-    orderBy: [{ isPinned: "desc" }, { publishedAt: "desc" }],
-  });
+    const stats = [
+      {
+        label: "Your Reports",
+        value: myBugs + myFeatures,
+        color: "text-brand-cyan",
+      },
+      {
+        label: "Open Issues",
+        value: openBugs + openFeatures,
+        color: "text-brand-yellow",
+      },
+      { label: "Fixed This Week", value: fixedThisWeek, color: "text-emerald-400" },
+      { label: "Votes Cast", value: myVotes, color: "text-purple-400" },
+    ];
 
-  const stats = [
-    {
-      label: "Your Reports",
-      value: myBugs + myFeatures,
-      color: "text-brand-cyan",
-    },
-    {
-      label: "Open Issues",
-      value: openBugs + openFeatures,
-      color: "text-brand-yellow",
-    },
-    { label: "Fixed This Week", value: fixedThisWeek, color: "text-emerald-400" },
-    { label: "Votes Cast", value: myVotes, color: "text-purple-400" },
-  ];
-
-  return (
+    return (
     <div className="max-w-6xl mx-auto space-y-6">
       {/* Welcome Banner */}
       <div className="bg-gradient-to-r from-brand-card to-brand-dark border border-brand-border rounded-xl p-6">
@@ -309,5 +310,21 @@ export default async function DashboardPage() {
         </div>
       )}
     </div>
-  );
+    );
+  } catch (error) {
+    console.error("[Portal Dashboard] Database error:", error);
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-8 max-w-md text-center">
+          <h2 className="text-xl font-semibold text-red-400 mb-2">Unable to load dashboard</h2>
+          <p className="text-gray-400 mb-4">
+            We&apos;re having trouble loading this page. Please try again in a moment.
+          </p>
+          <a href="/portal" className="inline-block px-4 py-2 bg-yellow-500 text-black rounded font-medium hover:bg-yellow-400 transition-colors">
+            Try Again
+          </a>
+        </div>
+      </div>
+    );
+  }
 }

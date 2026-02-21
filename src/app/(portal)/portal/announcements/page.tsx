@@ -14,11 +14,12 @@ export default async function AnnouncementsPage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
-  const announcements = await prisma.betaAnnouncement.findMany({
-    orderBy: [{ isPinned: "desc" }, { publishedAt: "desc" }],
-  });
+  try {
+    const announcements = await prisma.betaAnnouncement.findMany({
+      orderBy: [{ isPinned: "desc" }, { publishedAt: "desc" }],
+    });
 
-  return (
+    return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Announcements</h1>
@@ -82,5 +83,21 @@ export default async function AnnouncementsPage() {
         </div>
       )}
     </div>
-  );
+    );
+  } catch (error) {
+    console.error("[Announcements] Database error:", error);
+    return (
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Announcements</h1>
+          <p className="text-sm text-zinc-500 mt-1">
+            Platform updates, releases, and important notices.
+          </p>
+        </div>
+        <div className="bg-brand-card border border-brand-border rounded-xl p-12 text-center">
+          <p className="text-zinc-500">No announcements available at this time.</p>
+        </div>
+      </div>
+    );
+  }
 }
