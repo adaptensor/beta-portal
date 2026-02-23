@@ -16,7 +16,33 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { status, notes } = body;
+    const { status, notes, resendEmail } = body;
+
+    // Resend approval email for already-approved testers
+    if (resendEmail) {
+      const tester = await prisma.betaTester.findUnique({ where: { id } });
+      if (!tester) {
+        return NextResponse.json({ error: "Tester not found" }, { status: 404 });
+      }
+      if (tester.status !== "approved" && tester.status !== "active") {
+        return NextResponse.json({ error: "Tester must be approved to resend email" }, { status: 400 });
+      }
+      let emailSent = false;
+      let emailError: string | null = null;
+      if (process.env.SENDGRID_API_KEY) {
+        try {
+          await sendApprovalEmail(tester.email, tester.name);
+          emailSent = true;
+        } catch (err) {
+          emailError = err instanceof Error ? err.message : "Unknown email error";
+          console.error("Failed to resend approval email:", emailError);
+        }
+      } else {
+        emailError = "SENDGRID_API_KEY is not configured";
+        console.error("Cannot send email: SENDGRID_API_KEY not set");
+      }
+      return NextResponse.json({ ...tester, emailSent, emailError });
+    }
 
     const data: Record<string, unknown> = {};
     if (status !== undefined) {
@@ -37,13 +63,18 @@ export async function PATCH(
     // Send approval email via SendGrid
     let emailSent = false;
     let emailError: string | null = null;
-    if (status === "approved" && process.env.SENDGRID_API_KEY) {
-      try {
-        await sendApprovalEmail(updated.email, updated.name);
-        emailSent = true;
-      } catch (err) {
-        emailError = err instanceof Error ? err.message : "Unknown email error";
-        console.error("Failed to send approval email:", emailError);
+    if (status === "approved") {
+      if (process.env.SENDGRID_API_KEY) {
+        try {
+          await sendApprovalEmail(updated.email, updated.name);
+          emailSent = true;
+        } catch (err) {
+          emailError = err instanceof Error ? err.message : "Unknown email error";
+          console.error("Failed to send approval email:", emailError);
+        }
+      } else {
+        emailError = "SENDGRID_API_KEY is not configured";
+        console.error("Cannot send approval email: SENDGRID_API_KEY not set");
       }
     }
 
@@ -105,7 +136,12 @@ export async function DELETE(
 
 async function sendApprovalEmail(email: string, name: string) {
   const apiKey = process.env.SENDGRID_API_KEY;
-  if (!apiKey) return;
+  if (!apiKey) {
+    throw new Error("SENDGRID_API_KEY is not configured");
+  }
+
+  const fromEmail = process.env.SENDGRID_FROM_EMAIL || "support@adaptensor.com";
+  const fromName = process.env.SENDGRID_FROM_NAME || "Adaptensor Beta";
 
   const response = await fetch("https://api.sendgrid.com/v3/mail/send", {
     method: "POST",
@@ -115,7 +151,7 @@ async function sendApprovalEmail(email: string, name: string) {
     },
     body: JSON.stringify({
       personalizations: [{ to: [{ email }] }],
-      from: { email: process.env.SENDGRID_FROM_EMAIL || "beta@adaptensor.io", name: "Adaptensor Beta" },
+      from: { email: fromEmail, name: fromName },
       subject: "Your Adaptensor Beta Access Has Been Approved",
       content: [
         {
@@ -136,6 +172,7 @@ async function sendApprovalEmail(email: string, name: string) {
 
   if (!response.ok) {
     const errorBody = await response.text();
+    console.error(`SendGrid error [${response.status}]:`, errorBody);
     throw new Error(`SendGrid API returned ${response.status}: ${errorBody}`);
   }
 }

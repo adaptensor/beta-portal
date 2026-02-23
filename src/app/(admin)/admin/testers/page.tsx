@@ -19,6 +19,11 @@ interface Tester {
   _count: { bugs: number; features: number };
 }
 
+interface Toast {
+  message: string;
+  type: "success" | "error";
+}
+
 const STATUS_TABS = ["all", "pending", "approved", "active", "suspended"] as const;
 
 const STATUS_BADGE: Record<string, string> = {
@@ -37,6 +42,12 @@ export default function TesterManagement() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [editingNotes, setEditingNotes] = useState<Record<string, string>>({});
+  const [toast, setToast] = useState<Toast | null>(null);
+
+  const showToast = (message: string, type: "success" | "error") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 5000);
+  };
 
   const fetchTesters = useCallback(async () => {
     try {
@@ -58,14 +69,45 @@ export default function TesterManagement() {
   const handleAction = async (id: string, status: string) => {
     setActionLoading(id);
     try {
-      await fetch(`/api/admin/testers/${id}`, {
+      const res = await fetch(`/api/admin/testers/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
+      const data = await res.json();
+      if (status === "approved") {
+        if (data.emailSent) {
+          showToast(`Approval email sent to ${data.email}`, "success");
+        } else if (data.emailError) {
+          showToast(`Approved but email failed: ${data.emailError}`, "error");
+        }
+      }
       await fetchTesters();
     } catch (error) {
       console.error("Action failed:", error);
+      showToast("Action failed", "error");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleResendEmail = async (id: string) => {
+    setActionLoading(id);
+    try {
+      const res = await fetch(`/api/admin/testers/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resendEmail: true }),
+      });
+      const data = await res.json();
+      if (data.emailSent) {
+        showToast(`Approval email resent to ${data.email}`, "success");
+      } else {
+        showToast(`Email failed: ${data.emailError || "Unknown error"}`, "error");
+      }
+    } catch (error) {
+      console.error("Resend failed:", error);
+      showToast("Resend failed", "error");
     } finally {
       setActionLoading(null);
     }
@@ -112,6 +154,19 @@ export default function TesterManagement() {
         <h1 className="text-2xl font-bold text-white">Manage Testers</h1>
         <p className="text-zinc-500 text-sm mt-1">View and manage beta tester accounts</p>
       </div>
+
+      {/* Toast notification */}
+      {toast && (
+        <div
+          className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg border text-sm shadow-lg transition-all ${
+            toast.type === "success"
+              ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+              : "bg-red-500/20 text-red-400 border-red-500/30"
+          }`}
+        >
+          {toast.message}
+        </div>
+      )}
 
       {/* Tabs + Search */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
@@ -198,7 +253,7 @@ export default function TesterManagement() {
                         <td className="px-4 py-3 text-zinc-400">{tester._count.bugs}</td>
                         <td className="px-4 py-3 text-zinc-400">{tester._count.features}</td>
                         <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex gap-1">
+                          <div className="flex gap-1 flex-wrap">
                             {tester.status === "pending" && (
                               <>
                                 <button
@@ -218,13 +273,22 @@ export default function TesterManagement() {
                               </>
                             )}
                             {(tester.status === "approved" || tester.status === "active") && (
-                              <button
-                                onClick={() => handleAction(tester.id, "suspended")}
-                                disabled={actionLoading === tester.id}
-                                className="px-2 py-1 text-xs bg-red-500/20 text-red-400 border border-red-500/30 rounded hover:bg-red-500/30 disabled:opacity-50"
-                              >
-                                Suspend
-                              </button>
+                              <>
+                                <button
+                                  onClick={() => handleResendEmail(tester.id)}
+                                  disabled={actionLoading === tester.id}
+                                  className="px-2 py-1 text-xs bg-brand-yellow/10 text-brand-yellow border border-brand-yellow/20 rounded hover:bg-brand-yellow/20 disabled:opacity-50"
+                                >
+                                  Resend Email
+                                </button>
+                                <button
+                                  onClick={() => handleAction(tester.id, "suspended")}
+                                  disabled={actionLoading === tester.id}
+                                  className="px-2 py-1 text-xs bg-red-500/20 text-red-400 border border-red-500/30 rounded hover:bg-red-500/30 disabled:opacity-50"
+                                >
+                                  Suspend
+                                </button>
+                              </>
                             )}
                             {tester.status === "suspended" && (
                               <button
