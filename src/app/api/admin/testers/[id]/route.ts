@@ -41,7 +41,8 @@ export async function PATCH(
         emailError = "SENDGRID_API_KEY is not configured";
         console.error("Cannot send email: SENDGRID_API_KEY not set");
       }
-      return NextResponse.json({ ...tester, emailSent, emailError });
+      const debugFrom = process.env.SENDGRID_FROM_EMAIL || "jamie@adaptensor.com";
+      return NextResponse.json({ ...tester, emailSent, emailError, debugFrom });
     }
 
     const data: Record<string, unknown> = {};

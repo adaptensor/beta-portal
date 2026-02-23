@@ -101,9 +101,9 @@ export default function TesterManagement() {
       });
       const data = await res.json();
       if (data.emailSent) {
-        showToast(`Approval email resent to ${data.email}`, "success");
+        showToast(`Approval email resent to ${data.email} (from: ${data.debugFrom})`, "success");
       } else {
-        showToast(`Email failed: ${data.emailError || "Unknown error"}`, "error");
+        showToast(`Email failed (from: ${data.debugFrom}): ${data.emailError || "Unknown error"}`, "error");
       }
     } catch (error) {
       console.error("Resend failed:", error);
