@@ -140,7 +140,7 @@ async function sendApprovalEmail(email: string, name: string) {
     throw new Error("SENDGRID_API_KEY is not configured");
   }
 
-  const fromEmail = process.env.SENDGRID_FROM_EMAIL || "support@adaptensor.com";
+  const fromEmail = process.env.SENDGRID_FROM_EMAIL || "jamie@adaptensor.com";
   const fromName = process.env.SENDGRID_FROM_NAME || "Adaptensor Beta";
 
   const response = await fetch("https://api.sendgrid.com/v3/mail/send", {
