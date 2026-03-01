@@ -1,3 +1,12 @@
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  ⚠️  DANGER: THIS DATABASE IS SHARED WITH PRODUCTION!       ║
+// ║  DO NOT run `prisma db push` or `prisma migrate dev`        ║
+// ║  from this project. It WILL destroy production data.        ║
+// ║                                                              ║
+// ║  TODO: Move Beta to its own Neon database.                   ║
+// ║  Tracked as BP-001 CRITICAL in ECOSYSTEM_AUDIT_REPORT.md    ║
+// ╚══════════════════════════════════════════════════════════════╝
+
 generator client {
   provider = "prisma-client-js"
 }

@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
-    "seed": "dotenv -e .env.local -- tsx prisma/seed.ts"
+    "seed": "dotenv -e .env.local -- tsx prisma/seed.ts",
+    "db:push": "echo '❌ BLOCKED: Beta shares production DB. Do NOT push schema changes. See BP-001.' && exit 1",
+    "db:migrate": "echo '❌ BLOCKED: Beta shares production DB. Do NOT run migrations. See BP-001.' && exit 1",
+    "prisma:push": "echo '❌ BLOCKED: Beta shares production DB. See BP-001.' && exit 1"
   },
   "prisma": {
     "seed": "dotenv -e .env.local -- tsx prisma/seed.ts"
